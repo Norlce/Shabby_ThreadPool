@@ -1,3 +1,4 @@
+#pragma once
 #include<list>
 #include<tuple>
 #include<iostream>
@@ -52,6 +53,8 @@ private:
 public:
     template<typename T>
     JobNodeBase(T t) :jobbase(new JobDerived(t)) {}
+    template<typename Func, typename ...Args>
+    JobNodeBase(Func func, Args... args):jobbase(new JobDerived(Job(func, args...))){}
     JobNodeBase(JobNodeBase&& j) noexcept {
         this->jobbase = j.jobbase;
         j.jobbase = nullptr;
@@ -62,9 +65,11 @@ public:
     JobNodeBase operator=(JobNodeBase && j){
         this->jobbase = j.jobbase;
         j.jobbase = nullptr;
+        return *this;
     }
     JobNodeBase operator=(const JobNodeBase & j){
         this->jobbase = j.jobbase->copy();
+        return *this;
     }
     bool not_null(){
         return jobbase;
