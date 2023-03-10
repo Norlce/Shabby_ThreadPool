@@ -15,7 +15,7 @@ private:
         func(std::get<N>(args)...);
     }
 public:
-    Job(Func fun, Args... arg) :func(fun), args({ arg... }) {};
+    Job(Func fun, Args... arg) :func(fun), args({ arg... }) {}
     void do_() {
         indirect_call(std::make_index_sequence<arg_nums>{});
     }
@@ -46,24 +46,34 @@ public:
     }
 };
 
-class JobNode {
+class JobNodeBase {
 private:
     JobBase* jobbase;
 public:
     template<typename T>
-    JobNode(T t) :jobbase(new JobDerived(t)) {}
-    JobNode(const JobNode& j) noexcept {
-        this->jobbase = j.jobbase->copy();
-    }
-    JobNode(JobNode&& j) noexcept {
+    JobNodeBase(T t) :jobbase(new JobDerived(t)) {}
+    JobNodeBase(JobNodeBase&& j) noexcept {
         this->jobbase = j.jobbase;
         j.jobbase = nullptr;
+    }
+    JobNodeBase(const JobNodeBase& j) noexcept {
+        this->jobbase = j.jobbase->copy();
+    }
+    JobNodeBase operator=(JobNodeBase && j){
+        this->jobbase = j.jobbase;
+        j.jobbase = nullptr;
+    }
+    JobNodeBase operator=(const JobNodeBase & j){
+        this->jobbase = j.jobbase->copy();
+    }
+    bool not_null(){
+        return jobbase;
     }
     void do_() {
         jobbase->do_();
     }
-    ~JobNode() {
-        delete jobbase;
+    ~JobNodeBase() {
+        if(jobbase) delete jobbase;
     }
 };
 
