@@ -30,18 +30,16 @@ class ThreadPool{
             this->jqueue.job_add(Job(std::forward<T>(t)));
         }
         void detach_run(){
-            std::thread thr(thread_run);
+            std::thread thr(&ThreadPool::thread_run, this);
             thr.detach();
         }
     private:
         void thread_run(){
             Excutor ext(&jqueue);
-            this->thread_pool = new std::thread[10];
+            this->thread_pool = new std::thread[thread_num];
             for(int i = 0; i<thread_num; i++){
                 thread_pool[i] = std::thread(ext);
-            }
-            for(int i = 0; i<thread_num; i++){
-                thread_pool[i].join();
+                thread_pool[i].detach();
             }
             delete[] thread_pool;
         }
