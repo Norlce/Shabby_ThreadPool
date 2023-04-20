@@ -7,7 +7,7 @@
 namespace ShabbyThreadPool{
 
 class ThreadPool{
-    public:
+    private:
         Jobqueue jqueue;
         int thread_num;
         std::thread *thread_pool;
